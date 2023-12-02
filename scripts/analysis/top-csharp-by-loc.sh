@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 
-limit=${LIMIT:-25}
+limit=${LIMIT:-10}
+# awk program used to ignore blank lines and comments in C# files
+clean_csharp_awk='
+BEGIN { code_line=0; }
+/^\s*\/\// {next}          # Skip single-line comments
+/^\s*$/ {next}             # Skip blank lines
+/\/\*/,/\*\// {next}       # Skip multiline comments
+{ code_line++; }
+END { printf "%8d %s\n", code_line, FILENAME; }
+'
 repo_root=$(git rev-parse --show-toplevel)
 core_directories=( \
   Assets/Mirror/Authenticators \
@@ -38,7 +47,6 @@ examples_directories=( \
   Assets/Mirror/Examples/CharacterSelection \
   Assets/Mirror/Examples/Chat \
   Assets/Mirror/Examples/CouchCoop \
-  Assets/Mirror/Examples/Discovery \
   Assets/Mirror/Examples/LagCompensation \
   Assets/Mirror/Examples/MultipleAdditiveScenes \
   Assets/Mirror/Examples/MultipleMatches \
@@ -51,90 +59,152 @@ examples_directories=( \
   Assets/Mirror/Examples/TanksCoop \
 )
 
-function process_directories() {
+declare -A files_for_dir_dict
+declare -A total_files_for_dir_dict
+declare -A total_raw_csharp_loc_for_dir_dict
+declare -A total_clean_csharp_loc_for_dir_dict
+declare -A loc_raw_for_csharp_file_dict
+declare -A loc_clean_for_csharp_file_dict
+
+function report::__longest_item_length() {
+  local items=("$@")
+  local longest_length=0
+
+  for item in "${items[@]}"; do
+    current_length=${#item}
+    if (( current_length > longest_length )); then
+      longest_length=$current_length
+    fi
+  done
+
+  echo $longest_length
+}
+
+function report::sort_directories() {
+  for key in "${!total_clean_csharp_loc_for_dir_dict[@]}"; do
+    echo "${total_clean_csharp_loc_for_dir_dict[$key]} $key"
+  done | sort -nr | awk '{ print $2 }'
+}
+
+function report::__get_stats() {
+  local directory="$1"
+  local full_path="$repo_root/$directory"
+
+  local find_csharp_files=$(find "$full_path" -name '*.cs' -type f)
+  local csharp_file_count=$(printf '%s\n' "$find_csharp_files" | wc -l)
+  total_files_for_dir_dict[$directory]="$csharp_file_count"
+
+  local find_raw_loc=$(printf '%s\n' "$find_csharp_files" | xargs -I {} wc -l {} | sed "s|$full_path/||g" | sort -nr)
+  local find_clean_loc=$(printf '%s\n' "$find_csharp_files" | xargs -I {} awk "$clean_csharp_awk" {} | sed "s|$full_path/||g" | sort -nr)
+  local csharp_files_sort_by_clean_loc=("$(printf '%s\n' "$find_clean_loc" | awk '{ print $2 }')")
+  files_for_dir_dict[$directory]=$(IFS="|"; echo "${csharp_files_sort_by_clean_loc[@]}")
+
+  while IFS= read -r loc_line; do
+    local csharp_filepath=$(echo $loc_line | awk '{ print $2 }')
+    local count=$(echo $loc_line | awk '{ print $1 }')
+    loc_raw_for_csharp_file_dict["$csharp_filepath"]=$count
+  done <<< $find_raw_loc
+
+  while IFS= read -r loc_line; do
+    local csharp_filepath=$(echo $loc_line | awk '{ print $2 }')
+    local count=$(echo $loc_line | awk '{ print $1 }')
+    loc_clean_for_csharp_file_dict["$csharp_filepath"]=$count
+  done <<< $find_clean_loc
+
+  local total_raw_csharp_loc=$(echo -n "$find_raw_loc" | awk '{ sum += $1 } END { print sum }')
+  local total_clean_csharp_loc=$(echo -n "$find_clean_loc" | awk '{ sum += $1 } END { print sum }')
+
+  total_raw_csharp_loc_for_dir_dict["$directory"]=$total_raw_csharp_loc
+  total_clean_csharp_loc_for_dir_dict["$directory"]=$total_clean_csharp_loc
+}
+
+function report::__high_level_summary() {
   local directories=("$@")
-  local all_find_output=()
-  local find_output
-  local find_output_count
-  local printed_count
-  local sorted_target_directories
-  declare -A directory_total_loc_counts
+  local longest_length=$(report::__longest_item_length "${directories[@]}")
+  local display_length=20
+  if [ $longest_length -gt $display_length ]; then
+    display_length=$longest_length
+  fi
+  local header_row_format="    %-${display_length}s   %20s   %20s   %20s\n"
+  local data_row_format="    %-${display_length}s   %'20d   %'20d   %'20d\n"
 
-  for path in "${directories[@]}"; do
-    full_path="$repo_root/$path"
-    total_loc=$(find "$full_path" -name '*.cs' -type f -exec wc -l {} + | sort -nr | head -n 1 | awk '{ print $1 }')
-    directory_total_loc_counts["$path"]=$total_loc
-  done
-
-  sorted_target_directories=($(for key in "${!directory_total_loc_counts[@]}"; do
-    echo "${directory_total_loc_counts[$key]} $key"
-  done | sort -nr | awk '{ print $2 }'))
-
-  # calculate longest directory
-  path_length_with_padding=0
-  for path in "${sorted_target_directories[@]}"; do
-    current_length=${#path}
-    if (( current_length > path_length_with_padding )); then
-      path_length_with_padding=$current_length
-    fi
-  done
-  # add padding
-  let path_length_with_padding+=2
-
-  echo "High Level Summary"
-  for path in "${sorted_target_directories[@]}"; do
-    find_output=$(find "$path" -name '*.cs' -type f -exec wc -l {} + | sort -nr | sed "s|$path/||g")
-    find_output_count=$(echo "$find_output" | wc -l)
-    local find_output_count_without_summary
-    if [ $find_output_count -eq 1 ]; then
-      find_output_count_without_summary=1
-    else
-      find_output_count_without_summary=$((find_output_count - 1))
-    fi
-
-    LC_NUMERIC=en_US.UTF-8 printf "     Folder: %-${path_length_with_padding}sC# Files: %'3d   Total C# LOC: %'8d\n" \
-      "$path" \
-      "$find_output_count_without_summary" \
-      "${directory_total_loc_counts[$path]}"
+  echo "    High Level Summary"
+  printf "$header_row_format" "Folder" "C# Files" "Total LoC(clean)" "Total LoC(raw)"
+  for directory in "${directories[@]}"; do
+    local csharp_file_count="${total_files_for_dir_dict[$directory]}"
+    local total_raw_csharp_loc="${total_raw_csharp_loc_for_dir_dict[$directory]}"
+    local total_clean_csharp_loc="${total_clean_csharp_loc_for_dir_dict[$directory]}"
+    LC_NUMERIC=en_US.UTF-8 printf "$data_row_format" "$directory" "$csharp_file_count" "$total_clean_csharp_loc" "$total_raw_csharp_loc"
   done
   echo
+}
 
-  for path in "${sorted_target_directories[@]}"; do
-    find_output=$(find "$path" -name '*.cs' -type f -exec wc -l {} + | sort -nr | sed "s|$path/||g")
-    find_output_count=$(echo "$find_output" | wc -l)
-    find_output_count_without_summary=$((find_output_count - 1))
+function report::__details__files_info() {
+  local csharp_files="$@"
+  local count=$(printf "%s\n" $csharp_files | wc -l)
 
-    if [ "$find_output_count" -gt "$limit" ]; then
-      printed_count=$limit
-    elif [ "$find_output_count" -eq 1 ]; then
-      printed_count=1
-      find_output_count_without_summary=1
-    else
-      printed_count="${find_output_count_without_summary// /}"
+  local printed_count=$count
+  local printed_file="files"
+  if [ $count -eq 1 ]; then
+    printed_count=1
+    printed_file="file"
+  elif [ $count -gt $limit ]; then
+    printed_count=$limit
+  fi
+
+  LC_NUMERIC=en_US.UTF-8 printf "    Top %'.d of %'.d %s\n" \
+    "$printed_count" \
+    "$count" \
+    "$printed_file"
+}
+
+function report::__details() {
+  local directories=("$@")
+
+  for directory in "${directories[@]}"; do
+    echo "    Details for $directory"
+    mapfile -t csharp_files_sort_by_clean_loc <<< "${files_for_dir_dict[$directory]}"
+    report::__details__files_info "${csharp_files_sort_by_clean_loc[@]}"
+    csharp_files_sort_by_clean_loc_limited=("${csharp_files_sort_by_clean_loc[@]:0:$limit}")
+
+    local longest_length=$(report::__longest_item_length "${csharp_files_sort_by_clean_loc_limited[@]}")
+    local display_length=50
+    if [ $longest_length -gt $display_length ]; then
+      display_length=$longest_length
     fi
+    local header_row_format="    %-${display_length}s   %12s   %12s\n"
+    local data_row_format="    %-${display_length}s   %'12d   %'12d\n"
 
-    if [ "$printed_count" -gt 1 ]; then
-      printed_file="files"
-    else
-      printed_file="file"
-    fi
-
-    LC_NUMERIC=en_US.UTF-8 printf "Top %'.d of %'.d %s in %s Folder\n" \
-      "$printed_count" \
-      "$find_output_count_without_summary" \
-      "$printed_file" \
-      "$path"
-
-    echo "     LOC C# File"
-    if [ "$find_output_count" -gt 1 ]; then
-      filtered_results=$(echo -n "$find_output" | tail -n +2 | head -n "${limit}")
-      echo -n "$filtered_results"
-    else
-      echo -n "$find_output"
-    fi
-    echo
+    printf "$header_row_format" "C# File" "LoC(clean)" "LoC(raw)"
+    for csharp_file in "${csharp_files_sort_by_clean_loc_limited[@]}"; do
+      local loc_raw="${loc_raw_for_csharp_file_dict[$csharp_file]}"
+      local loc_clean="${loc_clean_for_csharp_file_dict[$csharp_file]}"
+      LC_NUMERIC=en_US.UTF-8 printf "$data_row_format" "$csharp_file" "$loc_clean" "$loc_raw"
+    done
     echo
   done
+  echo
+}
+
+function report::process_directories() {
+  local directories=("$@")
+
+  # reset dictionaries
+  declare -A files_for_dir_dict
+  declare -A total_raw_csharp_loc_for_dir_dict
+  declare -A total_clean_csharp_loc_for_dir_dict
+  declare -A loc_raw_for_csharp_file_dict
+  declare -A loc_clean_for_csharp_file_dict
+
+  for directory in "${directories[@]}"; do
+    full_path="$repo_root/$directory"
+    report::__get_stats "$directory"
+  done
+
+  IFS=$'\n' read -r -d '' -a sorted_directories < <(report::sort_directories && printf '\0')
+
+  report::__high_level_summary "${sorted_directories[@]}"
+  report::__details "${sorted_directories[@]}"
 }
 
 function main() {
@@ -147,23 +217,19 @@ function main() {
   echo "###########################"
   echo "### Core Mirror Folders ###"
   echo "###########################"
-  process_directories "${core_directories[@]}"
-  echo
+  report::process_directories "${core_directories[@]}"
   echo "###########################"
   echo "#### Transport Folders ####"
   echo "###########################"
-  process_directories "${transport_directories[@]}"
-  echo
+  report::process_directories "${transport_directories[@]}"
   echo "###########################"
   echo "###### Test  Folders ######"
   echo "###########################"
-  process_directories "${test_directories[@]}"
-  echo
+  report::process_directories "${test_directories[@]}"
   echo "###########################"
   echo "#### Examples  Folders ####"
   echo "###########################"
-  process_directories "${examples_directories[@]}"
-  echo
+  report::process_directories "${examples_directories[@]}"
 }
 
 main

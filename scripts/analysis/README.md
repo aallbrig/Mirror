@@ -9,42 +9,36 @@ Run
 # if running from root of Mirror repo:
 ./scripts/analysis/top-csharp-by-loc.sh
 
-# specify limit (default 25)
-LIMIT=10 ./scripts/analysis/top-csharp-by-loc.sh
+# specify limit (default 10)
+LIMIT=25 ./scripts/analysis/top-csharp-by-loc.sh
 ```
 
 Sample output
 ```text
-bash-5.2$ LIMIT=3 ./scripts/analysis/top-csharp-by-loc.sh 
+$ LIMIT=3 ./scripts/analysis/top-csharp-by-loc.sh 
+###########################
+### Core Mirror Folders ###
+###########################
+    High Level Summary
+    Folder                                     C# Files       Total LoC(clean)         Total LoC(raw)
+    Assets/Mirror/Core                              120                 13,869                 16,247
+    Assets/Mirror/Hosting                            97                  6,795                  7,826
+    Assets/Mirror/Components                         40                  5,926                  6,996
+    Assets/Mirror/Editor                             60                  5,429                  6,542
+    Assets/Mirror/Authenticators                      3                    324                    391
 
-Folder: ./Assets/Mirror/Tests/Editor, Total C# LOC: 22,699
-Top 3 C# files by LOC:
-    1728 NetworkReaderWriter/NetworkWriterTest.cs
-    1374 NetworkServer/NetworkServerTest.cs
-     967 NetworkBehaviour/NetworkBehaviourTests.cs
+    Details for Assets/Mirror/Core
+    Top 3 of 120 files
+    C# File                                                LoC(clean)       LoC(raw)
+    NetworkServer.cs                                            1,653          1,886
+    NetworkClient.cs                                            1,500          1,728
+    NetworkManager.cs                                           1,260          1,498
 
-Folder: ./Assets/Mirror/Core, Total C# LOC: 16,214
-Top 3 C# files by LOC:
-    1886 NetworkServer.cs
-    1728 NetworkClient.cs
-    1465 NetworkManager.cs
-
-Folder: ./Assets/Mirror/Hosting, Total C# LOC: 7,795
-Top 3 C# files by LOC:
-     949 Edgegap/Editor/EdgegapWindow.cs
-     240 Edgegap/Models/SDK/AppVersionUpdate.cs
-     240 Edgegap/Models/SDK/AppVersion.cs
-
-Folder: ./Assets/Mirror/Components, Total C# LOC: 6,996
-Top 3 C# files by LOC:
-     685 NetworkRoomManager.cs
-     619 NetworkAnimator.cs
-     476 NetworkTransform/NetworkTransformBase.cs
-
-Folder: ./Assets/Mirror/Transports/KCP, Total C# LOC: 3,988
-Top 3 C# files by LOC:
-    1118 kcp2k/kcp/Kcp.cs
-     746 kcp2k/highlevel/KcpPeer.cs
-     411 kcp2k/highlevel/KcpServer.cs
+    Details for Assets/Mirror/Hosting
+    Top 3 of 97 files
+    C# File                                                LoC(clean)       LoC(raw)
+    Edgegap/Editor/EdgegapWindow.cs                               815            980
+    Edgegap/Models/SDK/AppVersionUpdate.cs                        212            240
+    Edgegap/Models/SDK/AppVersion.cs                              212            240
 ...
 ```
