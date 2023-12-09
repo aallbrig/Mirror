@@ -1,32 +1,25 @@
-<?xml version="1.0" encoding="utf-8"?>
-<engine:UXML
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:engine="UnityEngine.UIElements"
-    xmlns:editor="UnityEditor.UIElements"
-    xmlns:uie="UnityEditor.UIElements"
->
-    <engine:VisualElement class="content">
-        <engine:Box>
-            <engine:Label text="Runtime Version" />
-            <engine:Label name="user-info_container-runtime-version" />
-            <engine:Label text="Runtime Status" />
-            <engine:Label name="user-info_container-runtime-status" />
-        </engine:Box>
-        <engine:Box>
-            <engine:VisualElement>
-                <engine:VisualElement name="container_container-build-targets" class="container" />
-                <engine:Button name="user-action_add-container-build-target" text="Add Container Build Target" tooltip="Add a target container build target (such as linux game server, or webgl game client)" />
-            </engine:VisualElement>
-            <engine:VisualElement>
-                <engine:Button name="user-action_build-and-run-container" text="Build and Run Container(s)" tooltip="Builds and runs a container"/>
-            </engine:VisualElement>
-            <engine:VisualElement>
-                <engine:Button name="user-action_open-documentation" text="Documentation" tooltip="Opens up documentation for this container hosting plugin."/>
-            </engine:VisualElement>
-        </engine:Box>
-        <engine:Box>
-            <engine:ScrollView>
-            </engine:ScrollView>
-        </engine:Box>
-    </engine:VisualElement>
-</engine:UXML>
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement class="content">
+        <ui:Box style="padding-top: 2px; padding-right: 16px; padding-bottom: 2px; padding-left: 16px;">
+            <ui:Label text="Runtime Version" />
+            <ui:Label name="user-info_container-runtime-version" />
+            <ui:Label text="Runtime Status" />
+            <ui:Label name="user-info_container-runtime-status" />
+        </ui:Box>
+        <ui:Box>
+            <ui:VisualElement>
+                <ui:VisualElement name="container_container-build-targets" class="container" />
+                <ui:Button name="user-action_add-container-build-target" text="Add Container Build Target" tooltip="Add a target container build target (such as linux game server, or webgl game client)" />
+            </ui:VisualElement>
+            <ui:VisualElement>
+                <ui:Button name="user-action_build-and-run-container" text="Build and Run Container(s)" tooltip="Builds and runs a container" />
+            </ui:VisualElement>
+            <ui:VisualElement>
+                <ui:Button name="user-action_open-documentation" text="Documentation" tooltip="Opens up documentation for this container hosting plugin." />
+            </ui:VisualElement>
+        </ui:Box>
+        <ui:Box>
+            <ui:ScrollView />
+        </ui:Box>
+    </ui:VisualElement>
+</ui:UXML>
