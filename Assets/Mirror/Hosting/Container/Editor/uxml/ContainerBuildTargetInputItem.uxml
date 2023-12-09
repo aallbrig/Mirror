@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<engine:UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:engine="UnityEngine.UIElements"
+    xmlns:editor="UnityEditor.UIElements"
+    xmlns:uie="UnityEditor.UIElements"
+>
+    <engine:VisualElement class="container">
+        <!--<engine:Label text="Container Build Target" />-->
+        <engine:EnumField name="user-input_container-build-type" label="Container Build Type" />
+        <engine:TextField name="user-input_container-build-path" label="Container Build Path" tooltip="The desired build path" disabled="true" />
+    </engine:VisualElement>
+</engine:UXML>

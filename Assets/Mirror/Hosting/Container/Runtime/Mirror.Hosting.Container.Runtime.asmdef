@@ -1,0 +1,17 @@
+{
+    "name": "Mirror.Hosting.Container.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "GUID:6c0b5be348cc4168ab526cbbd7f73536",
+        "GUID:f898689073ee4dfbb59cffc5f7771630"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

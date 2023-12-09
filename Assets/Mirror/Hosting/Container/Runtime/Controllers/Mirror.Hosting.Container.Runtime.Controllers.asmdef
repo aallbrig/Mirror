@@ -1,0 +1,16 @@
+{
+    "name": "Mirror.Hosting.Container.Runtime.Controllers",
+    "rootNamespace": "",
+    "references": [
+        "GUID:f898689073ee4dfbb59cffc5f7771630"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
