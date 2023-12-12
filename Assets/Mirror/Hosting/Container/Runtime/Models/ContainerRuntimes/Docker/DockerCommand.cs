@@ -20,7 +20,7 @@ namespace Mirror.Hosting.Container.Runtime.Models.ContainerRuntimes.Docker
         }
         protected override string Sanitize(string commandInputRaw)
         {
-            // todo: sanitize command to prevent command injection
+            // todo: actually sanitize command to prevent command injection
             return commandInputRaw;
         }
         protected override IEnumerable<string> ParseArguments(string commandInput)

@@ -28,6 +28,10 @@ namespace Mirror.Hosting.Container.Runtime.Controllers
             this.runtimeService = runtimeService;
             SyncRuntimeVersion();
         }
+        ~ContainerRuntimeStatusController()
+        {
+            eventBroker.Unsubscribe<ContainerRuntimeStatusChanged>(SyncRuntimeStatus);
+        }
         async void SyncRuntimeVersion()
         {
             string runtimeVersion = await runtimeService.GetRuntimeVersion();
