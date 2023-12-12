@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Mirror.Hosting.Container.Runtime.Models.ContainerRuntimes.Events;
+using Mirror.Hosting.Container.Runtime.Models.ContainerRuntimes.Interfaces;
 
 namespace Mirror.Hosting.Container.Runtime.Models.ContainerRuntimes
 {
@@ -15,22 +18,32 @@ namespace Mirror.Hosting.Container.Runtime.Models.ContainerRuntimes
         public ContainerRuntimeStatus NewStatus { get; set; }
         public ContainerRuntimeStatus OldStatus { get; set; }
     }
-    public abstract class ContainerRuntime
+    public abstract class ContainerRuntimeClient
     {
         public Action<StatusChangedEvent> runtimeStatusChanged;
 
-        public ContainerRuntimeStatus Status { get; private set; }
+        private ContainerRuntimeStatus _status = ContainerRuntimeStatus.Unknown;
+        private readonly IEventBroker eventBroker;
 
-        protected ContainerRuntime() {
+        public ContainerRuntimeStatus Status
+        {
+            get => _status;
+            protected set
+            {
+                if (_status != value)
+                {
+                    _status = value;
+                    eventBroker.Publish(new ContainerRuntimeStatusChanged(_status));
+                }
+            }
+        }
+
+        protected ContainerRuntimeClient(IEventBroker eventBroker)
+        {
+            this.eventBroker = eventBroker;
             Status = ContainerRuntimeStatus.Unknown;
         }
-
-        protected void UpdateRuntimeStatus(ContainerRuntimeStatus status)
-        {
-            ContainerRuntimeStatus oldStatus = Status;
-            Status = status;
-            runtimeStatusChanged?.Invoke(new StatusChangedEvent { OldStatus = oldStatus, NewStatus = status });
-        }
         public abstract Task<string> RuntimeVersion();
+        public abstract Task<IEnumerable<RunningContainer>> CreateRunningContainer(RunningContainerType runningContainerType);
     }
 }

@@ -1,5 +1,6 @@
 using System.IO;
 using Mirror.Hosting.Container.Runtime.Controllers;
+using Mirror.Hosting.Container.Runtime.Models.ContainerRuntimes;
 using Mirror.Hosting.Container.Runtime.Models.ContainerRuntimes.Docker;
 using UnityEditor;
 using UnityEngine;
@@ -9,11 +10,19 @@ namespace Mirror.Hosting.Container.Editor
 {
     public class ContainerHostingWindow : EditorWindow
     {
+        static ContainerRuntimeClient GetContainerRuntimeClient(ContainerRuntimeEventBroker eventBroker)
+        {
+            // todo: add support for other container runtimes
+            return new DockerRuntimeClient(eventBroker);
+        }
         VisualTreeAsset visualTree;
         VisualTreeAsset containerBuildTargetItem;
         ContainerWindowController containerWindowController;
         ContainerRuntimeStatusController containerRuntimeStatusController;
-        DockerRuntime dockerRuntime;
+        ContainerRuntimeClient client;
+        ContainerRuntimeRepository repository;
+        ContainerRuntimeService service;
+        private ContainerRuntimeEventBroker eventBroker;
 
         string StylesheetPath =>
             Path.GetDirectoryName(AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this)));
@@ -31,8 +40,7 @@ namespace Mirror.Hosting.Container.Editor
             rootVisualElement.Clear();
             visualTree.CloneTree(rootVisualElement);
             containerWindowController = new ContainerWindowController(rootVisualElement);
-            dockerRuntime = new DockerRuntime();
-            containerRuntimeStatusController = new ContainerRuntimeStatusController(rootVisualElement, dockerRuntime);
+            containerRuntimeStatusController = new ContainerRuntimeStatusController(rootVisualElement, service, eventBroker);
         }
 
         void OnEnable()
@@ -40,6 +48,10 @@ namespace Mirror.Hosting.Container.Editor
             visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>($"{StylesheetPath}/uxml/ContainerWindow.uxml");
             containerBuildTargetItem =
                 AssetDatabase.LoadAssetAtPath<VisualTreeAsset>($"{StylesheetPath}/uxml/ContainerBuildTargetInputItem.uxml");
+            eventBroker = new ContainerRuntimeEventBroker();
+            client = GetContainerRuntimeClient(eventBroker);
+            repository = new ContainerRuntimeRepository(client);
+            service = new ContainerRuntimeService(repository);
         }
     }
 }

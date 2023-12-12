@@ -1,5 +1,5 @@
 {
-    "name": "ContainerHosting.Editor",
+    "name": "Mirror.Hosting.Container.Editor",
     "rootNamespace": "",
     "references": [
         "GUID:6c0b5be348cc4168ab526cbbd7f73536",

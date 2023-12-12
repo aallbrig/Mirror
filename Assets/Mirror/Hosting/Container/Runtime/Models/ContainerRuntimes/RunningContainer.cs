@@ -1,5 +1,6 @@
 namespace Mirror.Hosting.Container.Runtime.Models.ContainerRuntimes
 {
+    // todo: ensure this model is _generically_ usable for all container runtimes (not just docker)
     public class RunningContainer
     {
         public static RunningContainer Parse(string dockerPsCommandOutputLine)
