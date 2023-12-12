@@ -7,6 +7,8 @@ namespace Mirror.Hosting.Container.Runtime.Models.ContainerRuntimes
         readonly ContainerRuntimeRepository repository;
         public ContainerRuntimeService(ContainerRuntimeRepository repository)
         {
+            if (repository == null) throw new System.ArgumentNullException(nameof(repository));
+
             this.repository = repository;
         }
         public Task<string> GetRuntimeVersion()

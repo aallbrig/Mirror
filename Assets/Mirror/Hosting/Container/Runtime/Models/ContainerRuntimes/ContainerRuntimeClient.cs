@@ -13,31 +13,21 @@ namespace Mirror.Hosting.Container.Runtime.Models.ContainerRuntimes
         Stopped,
         Error
     }
-    public struct StatusChangedEvent
-    {
-        public ContainerRuntimeStatus NewStatus { get; set; }
-        public ContainerRuntimeStatus OldStatus { get; set; }
-    }
     public abstract class ContainerRuntimeClient
     {
-        public Action<StatusChangedEvent> runtimeStatusChanged;
-
-        private ContainerRuntimeStatus _status = ContainerRuntimeStatus.Unknown;
+        private ContainerRuntimeStatus status = ContainerRuntimeStatus.Unknown;
         private readonly IEventBroker eventBroker;
-
         public ContainerRuntimeStatus Status
         {
-            get => _status;
+            get => status;
             protected set
             {
-                if (_status != value)
-                {
-                    _status = value;
-                    eventBroker.Publish(new ContainerRuntimeStatusChanged(_status));
-                }
+                if (status == value)
+                    return;
+                status = value;
+                eventBroker.Publish(new ContainerRuntimeStatusChanged(status));
             }
         }
-
         protected ContainerRuntimeClient(IEventBroker eventBroker)
         {
             this.eventBroker = eventBroker;

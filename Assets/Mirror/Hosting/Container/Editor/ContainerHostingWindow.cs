@@ -18,7 +18,7 @@ namespace Mirror.Hosting.Container.Editor
         VisualTreeAsset visualTree;
         VisualTreeAsset containerBuildTargetItem;
         ContainerWindowController containerWindowController;
-        ContainerRuntimeStatusController containerRuntimeStatusController;
+        RuntimeSummaryController runtimeSummaryController;
         ContainerRuntimeClient client;
         ContainerRuntimeRepository repository;
         ContainerRuntimeService service;
@@ -40,7 +40,7 @@ namespace Mirror.Hosting.Container.Editor
             rootVisualElement.Clear();
             visualTree.CloneTree(rootVisualElement);
             containerWindowController = new ContainerWindowController(rootVisualElement);
-            containerRuntimeStatusController = new ContainerRuntimeStatusController(rootVisualElement, service, eventBroker);
+            runtimeSummaryController = new RuntimeSummaryController(rootVisualElement, service, eventBroker);
         }
 
         void OnEnable()
