@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Mirror.Hosting.Container.Runtime.Models.Enums;
 using UnityEngine;
 
 namespace Mirror.Hosting.Container.Runtime.Models.ContainerRuntimes.Docker
@@ -34,7 +35,7 @@ namespace Mirror.Hosting.Container.Runtime.Models.ContainerRuntimes.Docker
             DockerCommand runningContainersCommand;
             switch (runningContainerQuery)
             {
-                case RunningContainerType.GameClient_WebGL:
+                case RunningContainerType.GameClientWebGL:
                     runningContainersCommand = new DockerCommand("docker ps --filter \"label=container-hosting_running-container-type=game-client_webgl\"");
                     break;
                 default:

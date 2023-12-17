@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Mirror.Hosting.Container.Runtime.Models.ContainerRuntimes.Events;
 using Mirror.Hosting.Container.Runtime.Models.ContainerRuntimes.Interfaces;
+using Mirror.Hosting.Container.Runtime.Models.Enums;
 
 namespace Mirror.Hosting.Container.Runtime.Models.ContainerRuntimes
 {

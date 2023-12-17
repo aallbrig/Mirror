@@ -1,4 +1,4 @@
-namespace Mirror.Hosting.Container.Enums
+namespace Mirror.Hosting.Container.Runtime.Models.Enums
 {
     public enum ContainerBuildTypes
     {

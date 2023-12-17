@@ -1,5 +1,5 @@
 {
-    "name": "Mirror.Hosting.Container.Runtime.EditMode.Tests",
+    "name": "Mirror.Hosting.Container.Runtime.PlayMode.Tests",
     "rootNamespace": "",
     "references": [
         "GUID:0acc523941302664db1f4e527237feb3",
@@ -9,13 +9,13 @@
         "GUID:6c0b5be348cc4168ab526cbbd7f73536",
         "GUID:6bde651ecf90e4ea684179a288effde2"
     ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
     "autoReferenced": true,
     "defineConstraints": [
         "UNITY_INCLUDE_TESTS"

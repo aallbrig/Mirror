@@ -15,7 +15,7 @@ namespace Mirror.Hosting.Container.Runtime.Models.ContainerRuntimes.Docker
             // however, it is a design decision that "docker.exe" should not be included in the command. Perhaps this means the
             // docker CLI interactions is actually using a pseudo docker command that then is translated into the real docker command
             // (including turning the executable into "docker.exe" for windows users)
-            var leadsWithDocker = sanitizedCommandInput.StartsWith("docker");
+            bool leadsWithDocker = sanitizedCommandInput.StartsWith("docker");
             return leadsWithDocker;
         }
         protected override string Sanitize(string commandInputRaw)
@@ -25,6 +25,7 @@ namespace Mirror.Hosting.Container.Runtime.Models.ContainerRuntimes.Docker
         }
         protected override IEnumerable<string> ParseArguments(string commandInput)
         {
+            // todo: parse arguments more intelligently
             return commandInput.Replace("docker ", "").Split(" ");
         }
         public override async Task<ContainerRuntimeCommandResponse> Execute()
@@ -32,30 +33,24 @@ namespace Mirror.Hosting.Container.Runtime.Models.ContainerRuntimes.Docker
             if (!IsValidCommand)
                 throw new Exception($"container hosting | invalid docker command | {this}");
 
-            string cmdArgs = "";
+            string cmdArgumentsCombinedStr = "";
             foreach (string commandArg in commandArguments)
-                cmdArgs += $"{commandArg} ";
+                cmdArgumentsCombinedStr += $"{commandArg} ";
 
             // todo detect if docker is available in path
-// #if UNITY_EDITOR_WIN
-// #elif UNITY_EDITOR_OSX
-// #elif UNITY_EDITOR_LINUX
-// #else
-// #endif
-
             using Process dockerProcess = new Process();
 #if UNITY_EDITOR_WIN
             dockerProcess.StartInfo.FileName = "docker.exe";
-            dockerProcess.StartInfo.Arguments = dockerCommandArgs;
+            dockerProcess.StartInfo.Arguments = cmdArgumentsCombinedStr;
 #elif UNITY_EDITOR_OSX
             dockerProcess.StartInfo.FileName = "docker";
-            dockerProcess.StartInfo.Arguments = cmdArgs;
+            dockerProcess.StartInfo.Arguments = cmdArgumentsCombinedStr;
 #elif UNITY_EDITOR_LINUX
             dockerProcess.StartInfo.FileName = "/bin/docker";
-            dockerProcess.StartInfo.Arguments = $"-c \"{dockerCommandArgs}\"";
+            dockerProcess.StartInfo.Arguments = $"-c \"{cmdArgumentsCombinedStr}\"";
 #else
             dockerProcess.StartInfo.FileName = "docker";
-            dockerProcess.StartInfo.Arguments = dockerCommandArgs;
+            dockerProcess.StartInfo.Arguments = cmdArgumentsCombinedStr;
 #endif
             dockerProcess.StartInfo.RedirectStandardOutput = true;
             dockerProcess.StartInfo.RedirectStandardError = true;

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Mirror.Hosting.Container.Runtime.Models.ContainerRuntimes;
 using Mirror.Hosting.Container.Runtime.Models.ContainerRuntimes.Docker;
 using Mirror.Hosting.Container.Runtime.Models.ContainerRuntimes.Events;
+using Mirror.Hosting.Container.Runtime.Models.Enums;
 using NUnit.Framework;
 
 namespace Mirror.Hosting.Container.Runtime.Tests.EditMode.Models.ContainerRuntimes.Docker
@@ -21,10 +22,10 @@ namespace Mirror.Hosting.Container.Runtime.Tests.EditMode.Models.ContainerRuntim
         public async void DockerRuntime_AbleToQueryRunningGameClientWebGlContainers()
         {
             DockerRuntimeClient sut = new DockerRuntimeClient(new ContainerRuntimeEventBroker());
-            IEnumerable<RunningContainer> runningContainer = await sut.CreateRunningContainer(RunningContainerType.GameClient_WebGL);
+            IEnumerable<RunningContainer> runningContainer = await sut.CreateRunningContainer(RunningContainerType.GameClientWebGL);
             Assert.NotNull(runningContainer, "expected running container to be created");
 
-            IEnumerable<RunningContainer> runningContainers = await sut.RunningContainers(RunningContainerType.GameClient_WebGL);
+            IEnumerable<RunningContainer> runningContainers = await sut.RunningContainers(RunningContainerType.GameClientWebGL);
             Assert.NotNull(runningContainers, "expected to find running containers");
         }
         [Test]

@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Mirror.Hosting.Container.Enums;
+using Mirror.Hosting.Container.Runtime.Models.Enums;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 
-namespace Mirror.Hosting.Container.Models.Builders.UnityAssets
+namespace Mirror.Hosting.Container.Runtime.Models.Builders.UnityAssets
 {
 
     public class UnityAssetBuilder
@@ -56,4 +56,5 @@ namespace Mirror.Hosting.Container.Models.Builders.UnityAssets
             return new BuildPlayerOptions();
         }
     }
+
 }
