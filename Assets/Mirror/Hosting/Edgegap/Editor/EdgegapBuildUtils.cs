@@ -22,7 +22,12 @@ namespace Edgegap
 
         public static BuildReport BuildServer()
         {
-            IEnumerable<string> scenes = EditorBuildSettings.scenes.Select(s=>s.path);
+            // MIRROR CHANGE: only include scenes which are enabled
+            IEnumerable<string> scenes = EditorBuildSettings.scenes
+                .Where(s => s.enabled)
+                .Select(s => s.path);
+            // END MIRROR CHANGE
+
             BuildPlayerOptions options = new BuildPlayerOptions
             {
                 scenes = scenes.ToArray(),
@@ -227,6 +232,11 @@ COPY Builds/EdgegapServer /root/build/
 WORKDIR /root/
 
 RUN chmod +x /root/build/ServerBuild
+
+RUN apt-get update && \
+    apt-get install -y ca-certificates && \
+    apt-get clean && \
+    update-ca-certificates
 
 ENTRYPOINT [ ""/root/build/ServerBuild"", ""-batchmode"", ""-nographics""]
 ";

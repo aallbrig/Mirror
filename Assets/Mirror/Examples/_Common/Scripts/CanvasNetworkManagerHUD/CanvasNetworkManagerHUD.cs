@@ -6,6 +6,7 @@ using Mirror;
 
 namespace Mirror.Examples.Common
 {
+    [AddComponentMenu("")]
     public class CanvasNetworkManagerHUD : MonoBehaviour
     {
         [SerializeField] private GameObject startButtonsGroup;
@@ -188,13 +189,13 @@ namespace Mirror.Examples.Common
         // you first add this script to a gameobject.
         private void Reset()
         {
-#if UNITY_2021_3_OR_NEWER
+#if UNITY_2022_2_OR_NEWER
             if (!FindAnyObjectByType<NetworkManager>())
                 Debug.LogError("This component requires a NetworkManager component to be present in the scene. Please add!");
 #else
-        // Deprecated in Unity 2023.1
-        if (!FindObjectOfType<NetworkManager>())
-            Debug.LogError("This component requires a NetworkManager component to be present in the scene. Please add!");
+            // Deprecated in Unity 2023.1
+            if (!FindObjectOfType<NetworkManager>())
+                Debug.LogError("This component requires a NetworkManager component to be present in the scene. Please add!");
 #endif
         }
     }

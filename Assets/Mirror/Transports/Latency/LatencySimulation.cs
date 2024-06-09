@@ -22,9 +22,33 @@ namespace Mirror
 
     [HelpURL("https://mirror-networking.gitbook.io/docs/transports/latency-simulaton-transport")]
     [DisallowMultipleComponent]
-    public class LatencySimulation : Transport
+    public class LatencySimulation : Transport, PortTransport
     {
         public Transport wrap;
+
+        // implement PortTransport in case the underlying Tranpsport is a PortTransport too.
+        // otherwise gameplay code like 'if Transport is PortTransport' would completely break with Latency Simulation.
+        public ushort Port
+        {
+            get
+            {
+                if (wrap is PortTransport port)
+                    return port.Port;
+                
+                Debug.LogWarning($"LatencySimulation: attempted to get Port but {wrap} is not a PortTransport.");
+                return 0;   
+            }
+            set
+            {
+                if (wrap is PortTransport port)
+                {
+                    port.Port = value;
+                    return;
+                }
+                
+                Debug.LogWarning($"LatencySimulation: attempted to set Port but {wrap} is not a PortTransport.");
+            }
+        }
 
         [Header("Common")]
         // latency always needs to be applied to both channels!
@@ -161,18 +185,20 @@ namespace Mirror
 
         public override void ClientConnect(string address)
         {
-            wrap.OnClientConnected    = OnClientConnected;
+            wrap.OnClientConnected = OnClientConnected;
             wrap.OnClientDataReceived = OnClientDataReceived;
-            wrap.OnClientError        = OnClientError;
+            wrap.OnClientError = OnClientError;
+            wrap.OnClientTransportException = OnClientTransportException;
             wrap.OnClientDisconnected = OnClientDisconnected;
             wrap.ClientConnect(address);
         }
 
         public override void ClientConnect(Uri uri)
         {
-            wrap.OnClientConnected    = OnClientConnected;
+            wrap.OnClientConnected = OnClientConnected;
             wrap.OnClientDataReceived = OnClientDataReceived;
-            wrap.OnClientError        = OnClientError;
+            wrap.OnClientError = OnClientError;
+            wrap.OnClientTransportException = OnClientTransportException;
             wrap.OnClientDisconnected = OnClientDisconnected;
             wrap.ClientConnect(uri);
         }
@@ -211,6 +237,7 @@ namespace Mirror
             wrap.OnServerConnected = OnServerConnected;
             wrap.OnServerDataReceived = OnServerDataReceived;
             wrap.OnServerError = OnServerError;
+            wrap.OnServerTransportException = OnServerTransportException;
             wrap.OnServerDisconnected = OnServerDisconnected;
             wrap.ServerStart();
         }
@@ -258,7 +285,7 @@ namespace Mirror
 #endif
                 {
                     // send and eat
-                    wrap.ClientSend(new ArraySegment<byte>(message.bytes), Channels.Reliable);
+                    wrap.ClientSend(new ArraySegment<byte>(message.bytes), Channels.Unreliable);
                     unreliableClientToServer.RemoveAt(i);
                     --i;
                 }
@@ -303,7 +330,7 @@ namespace Mirror
 #endif
                 {
                     // send and eat
-                    wrap.ServerSend(message.connectionId, new ArraySegment<byte>(message.bytes), Channels.Reliable);
+                    wrap.ServerSend(message.connectionId, new ArraySegment<byte>(message.bytes), Channels.Unreliable);
                     unreliableServerToClient.RemoveAt(i);
                     --i;
                 }

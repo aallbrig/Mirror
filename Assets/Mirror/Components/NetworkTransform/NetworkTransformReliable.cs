@@ -11,6 +11,7 @@ namespace Mirror
         uint sendIntervalCounter = 0;
         double lastSendIntervalTime = double.MinValue;
 
+        [Header("Additional Settings")]
         [Tooltip("If we only sync on change, then we need to correct old snapshots if more time than sendInterval * multiplier has elapsed.\n\nOtherwise the first move will always start interpolating from the last move sequence's time, which will make it stutter when starting every time.")]
         public float onlySyncOnChangeCorrectionMultiplier = 2;
 
@@ -402,9 +403,9 @@ namespace Mirror
         // reset state for next session.
         // do not ever call this during a session (i.e. after teleport).
         // calling this will break delta compression.
-        public override void Reset()
+        public override void ResetState()
         {
-            base.Reset();
+            base.ResetState();
 
             // reset delta
             lastSerializedPosition = Vector3Long.zero;

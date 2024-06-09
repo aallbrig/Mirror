@@ -99,13 +99,9 @@ namespace Mirror
         public Color overlayColor = new Color(0, 0, 0, 0.5f);
 
         // initialization //////////////////////////////////////////////////////
-        // make sure to call this when inheriting too!
-        protected virtual void Awake() { }
-
-        protected override void OnValidate()
+        // forcec configuration of some settings
+        protected virtual void Configure()
         {
-            base.OnValidate();
-
             // set target to self if none yet
             if (target == null) target = transform;
 
@@ -119,6 +115,22 @@ namespace Mirror
             // Unity doesn't support setting world scale.
             // OnValidate force disables syncScale in world mode.
             if (coordinateSpace == CoordinateSpace.World) syncScale = false;
+        }
+
+        // make sure to call this when inheriting too!
+        protected virtual void Awake()
+        {
+            // sometimes OnValidate() doesn't run before launching a project.
+            // need to guarantee configuration runs.
+            Configure();
+        }
+
+        protected override void OnValidate()
+        {
+            base.OnValidate();
+
+            // configure in awake
+            Configure();
         }
 
         // snapshot functions //////////////////////////////////////////////////
@@ -311,9 +323,9 @@ namespace Mirror
         }
 
         [ClientRpc]
-        void RpcReset()
+        void RpcResetState()
         {
-            Reset();
+            ResetState();
         }
 
         // common Teleport code for client->server and server->client
@@ -332,8 +344,7 @@ namespace Mirror
             // but server's last delta will have been reset, causing offsets.
             //
             // instead, simply clear snapshots.
-            serverSnapshots.Clear();
-            clientSnapshots.Clear();
+            ResetState();
 
             // TODO
             // what if we still receive a snapshot from before the interpolation?
@@ -358,8 +369,7 @@ namespace Mirror
             // but server's last delta will have been reset, causing offsets.
             //
             // instead, simply clear snapshots.
-            serverSnapshots.Clear();
-            clientSnapshots.Clear();
+            ResetState();
 
             // TODO
             // what if we still receive a snapshot from before the interpolation?
@@ -367,7 +377,7 @@ namespace Mirror
             // -> maybe add destination as first entry?
         }
 
-        public virtual void Reset()
+        public virtual void ResetState()
         {
             // disabled objects aren't updated anymore.
             // so let's clear the buffers.
@@ -375,9 +385,16 @@ namespace Mirror
             clientSnapshots.Clear();
         }
 
+        public virtual void Reset()
+        {
+            ResetState();
+            // default to ClientToServer so this works immediately for users
+            syncDirection = SyncDirection.ClientToServer;
+        }
+
         protected virtual void OnEnable()
         {
-            Reset();
+            ResetState();
 
             if (NetworkServer.active)
                 NetworkIdentity.clientAuthorityCallback += OnClientAuthorityChanged;
@@ -385,7 +402,7 @@ namespace Mirror
 
         protected virtual void OnDisable()
         {
-            Reset();
+            ResetState();
 
             if (NetworkServer.active)
                 NetworkIdentity.clientAuthorityCallback -= OnClientAuthorityChanged;
@@ -403,8 +420,8 @@ namespace Mirror
 
             if (syncDirection == SyncDirection.ClientToServer)
             {
-                Reset();
-                RpcReset();
+                ResetState();
+                RpcResetState();
             }
         }
 
